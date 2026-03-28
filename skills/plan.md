@@ -620,32 +620,19 @@ Present the plan inline, then:
 > This is the **last required checkpoint** until delivery. Review the plan above — approve, or want changes?"
 
 **If the user requests changes:** Revise the plan, re-present for approval.
-**If approved:** Update PLAN.md status to `approved`, update STATE.md, transition to execution.
+**If approved:** Update PLAN.md status to `approved`, then update state via the CLI, and transition to execution.
 
 ## After Approval
 
-Update `.sutando/STATE.md`:
+Use sutando-tools.cjs for state operations — provides lockfile safety and atomic writes:
 
-```markdown
----
-phase: plan
-updated: [timestamp]
----
-
-# Sutando State
-
-## Configuration
-- Mode: [A/B/C]
-- Interruption: [setting]
-- Parallelism: [sequential/wave]
-- Model Profile: [quality/balanced/budget]
-
-## Progress
-- [x] Clarification complete
-- [x] Planning complete — PLAN.md approved
-- [ ] Execution (0/[N] tasks)
-- [ ] Delivery
+```bash
+SUTANDO_ROOT="$HOME/.claude/skills/sutando"
+node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase plan
+node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase approved
 ```
+
+The first command records that planning is complete. The second records that the user approved the plan, enabling the transition to execution.
 
 Then transition to execution (the orchestrator handles routing).
 
