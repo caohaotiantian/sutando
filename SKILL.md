@@ -98,6 +98,7 @@ The three principles reinforce each other and prevent common failure cascades:
 
 You MUST complete these steps in order:
 
+0. **Quick mode check** — Is this trivial enough for quick mode?
 1. **Session check** — Look for existing `.sutando/STATE.md`
 2. **Mode detection** — Analyze request, suggest mode (A/B/C), let user confirm or override
 3. **Preference capture** — Ask interruption tolerance (minimal/normal/checkpoint), default normal
@@ -217,6 +218,24 @@ If fresh: `mv .sutando .sutando.bak`, proceed to mode detection.
 **If `.sutando.bak/` exists (from a previous fresh start):** Don't mention it unless the user asks. It's an archive, not active state.
 
 ## Step 2: Mode Detection
+
+### Quick Mode Detection
+
+Before suggesting A/B/C modes, check if this is a trivial task:
+
+**Quick mode signals:**
+- Request is a single clear action ("fix the typo in README", "rename foo to bar")
+- Scope is 1-3 files
+- No ambiguity in what to do
+- Change is mechanical, not creative
+
+If ALL signals match, suggest quick mode:
+> "This looks like a quick fix. I can handle it with **Quick Mode** — TDD the fix, commit, done. No planning overhead. Or I can use the full pipeline if you prefer."
+
+If user accepts: Read and follow `skills/quick.md`
+If user declines: Continue with A/B/C mode detection below.
+
+### A/B/C Mode Detection
 
 Analyze the user's request to suggest a clarification depth.
 
