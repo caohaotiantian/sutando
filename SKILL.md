@@ -12,6 +12,25 @@ description: >
 
 > Your Stand fights on your behalf — collaborative clarification, autonomous execution, verified delivery.
 
+## CLI Tool
+
+Sutando includes a CLI tool for reliable state management. Use it instead of manual file operations:
+
+```bash
+SUTANDO_ROOT="$HOME/.claude/skills/sutando"
+node "$SUTANDO_ROOT/bin/sutando-tools.cjs" <command>
+```
+
+This provides lockfile safety, atomic writes, and structured JSON output. Key commands:
+
+- `init --mode B --interruption normal` — Initialize `.sutando/` directory
+- `state get` / `state get phase` — Read state
+- `state set phase execute` — Update state atomically
+- `state progress --task N --status done` — Update task progress
+- `state progress --summary` — Progress summary
+- `config get mode` / `config set interruption checkpoint` — Read/write config
+- `status` — Quick status display
+
 ## Overview
 
 Sutando is a two-zone workflow:
@@ -174,14 +193,19 @@ The mode affects how deep each phase goes, but every phase still happens:
 
 ## Step 1: Session Check
 
-Check if `.sutando/STATE.md` exists in the project root.
+Check if `.sutando/STATE.md` exists in the project root. Use the CLI to read the current phase:
+
+```bash
+SUTANDO_ROOT="$HOME/.claude/skills/sutando"
+node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state get phase
+```
 
 **If it exists:**
 > "I found an existing Sutando session. Current state: **[phase] phase, [progress].**
 > - **Resume** from where we left off?
 > - **Start fresh** (archives current `.sutando/` to `.sutando.bak/`)?"
 
-If resume: read STATE.md, jump to the appropriate phase skill. Before continuing work, verify the codebase state:
+If resume: read the state via `node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state get` to determine current phase and progress, then jump to the appropriate phase skill. Before continuing work, verify the codebase state:
 - Run the test suite to confirm previously completed work still passes.
 - Check `git status` and `git log --oneline -5` for any changes made between sessions.
 - If the codebase has changed significantly (files modified, new commits by the user), flag it: "I notice some changes since our last session — [summary]. These might affect the plan. Want me to review and adjust, or proceed as-is?"
@@ -248,56 +272,16 @@ Wait for user response. Accept their choice.
 
 ## Step 4: Initialize .sutando/
 
-Create the project state directory:
+Use sutando-tools.cjs to initialize the project state directory, config, and STATE.md atomically — provides lockfile safety and atomic writes:
 
 ```bash
-mkdir -p .sutando/phases/research
-mkdir -p .sutando/phases/execution
-mkdir -p .sutando/phases/delivery
+SUTANDO_ROOT="$HOME/.claude/skills/sutando"
+node "$SUTANDO_ROOT/bin/sutando-tools.cjs" init --mode "$MODE" --interruption "$INTERRUPTION"
 ```
 
-Write `.sutando/config.json`:
-
-```json
-{
-  "mode": "<user's choice>",
-  "interruption": "<user's choice or 'normal'>",
-  "parallelism": "adaptive",
-  "created_at": "<ISO timestamp>",
-  "project_framework": "<detected framework or 'unknown'>",
-  "has_tests": <true/false>,
-  "has_claude_md": <true/false>
-}
-```
+This creates the full `.sutando/` directory structure, writes `config.json`, and writes the initial `STATE.md` in a single atomic operation.
 
 Add `.sutando/` to `.gitignore` if not already present (the user's project shouldn't track Sutando's internal state by default).
-
-Write initial `.sutando/STATE.md`:
-
-```markdown
----
-phase: init
-updated: <ISO timestamp>
----
-
-# Sutando State
-
-## Configuration
-- Mode: <A/B/C>
-- Interruption: <setting>
-- Parallelism: adaptive
-
-## Progress
-- [x] Session check
-- [x] Mode detection
-- [x] Preference capture
-- [x] Initialization
-- [ ] Clarification
-- [ ] Planning
-- [ ] Plan approval
-- [ ] Execution
-- [ ] Delivery
-```
 
 ### Directory Structure
 
@@ -435,7 +419,13 @@ Phases are sequential and each has a clear input and output:
 
 ### State Management
 
-After each phase completes, update `.sutando/STATE.md` with the current progress. This enables session resumption if the conversation is interrupted.
+After each phase completes, use sutando-tools.cjs to update state atomically — provides lockfile safety and atomic writes:
+
+```bash
+node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase <phase-name>
+```
+
+This enables session resumption if the conversation is interrupted.
 
 The STATE.md file is the single source of truth for "where are we?" It should always reflect:
 - Which phase is current
