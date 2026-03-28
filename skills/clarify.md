@@ -516,26 +516,11 @@ The transition message serves two purposes: (1) it confirms the agent understood
 
 ## After Writing SPEC.md
 
-Update `.sutando/STATE.md`:
+Use sutando-tools.cjs for state operations — provides lockfile safety and atomic writes:
 
-```markdown
----
-phase: clarify
-updated: [timestamp]
----
-
-# Sutando State
-
-## Configuration
-- Mode: [A/B/C]
-- Interruption: [setting]
-- Parallelism: adaptive
-
-## Progress
-- [x] Clarification complete — SPEC.md written
-- [ ] Planning
-- [ ] Execution
-- [ ] Delivery
+```bash
+SUTANDO_ROOT="$HOME/.claude/skills/sutando"
+node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase clarify
 ```
 
 Then transition to the planning phase (the orchestrator handles routing).
