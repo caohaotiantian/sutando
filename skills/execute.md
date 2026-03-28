@@ -66,7 +66,7 @@ Every task in the plan declares a checkpoint type. Follow the protocol for each 
 
 ### `auto` Tasks — Silent Execution
 
-Execute the full TDD cycle. Verify. Commit. Update STATE.md. Move to the next task. No human interaction.
+Execute the full TDD cycle. Verify. Commit. Update progress via `node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --task N --status done`. Move to the next task. No human interaction.
 
 This is the default and covers ~85% of tasks.
 
@@ -172,7 +172,7 @@ For each task in order:
     4. Follow checkpoint protocol
     5. Self-review against SPEC.md
     6. Commit
-    7. Update STATE.md progress
+    7. Update progress: `node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --task N --status done`
     8. Emit progress report
     9. Next task
 ```
@@ -196,7 +196,7 @@ For each wave:
        f. If verifier says FAIL: fix integration issues inline
     4. Run FULL test suite after the wave completes (not just new tests)
     5. Handle any human-verify or decision checkpoints in the wave
-    6. Update STATE.md progress
+    6. Update progress for each task: `node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --task N --status done`
     7. Emit wave progress report
     8. Next wave
 ```
@@ -376,15 +376,17 @@ Ask yourself: "If I remove any line of this code, does the test fail?" If the an
 2. Use the exact commit message from the plan
 3. Commit
 
-### UPDATE STATE.MD
+### UPDATE STATE
 
-Mark the task as complete:
+Use sutando-tools.cjs for state operations — provides lockfile safety and atomic writes:
 
-```markdown
-- [x] Task N: [name] (DONE)
+```bash
+SUTANDO_ROOT="$HOME/.claude/skills/sutando"
+node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase execute
+node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --task N --status done
 ```
 
-Add any decisions or issues encountered.
+Add any decisions or issues encountered to STATE.md manually (the CLI handles phase and task progress atomically).
 
 ## Debugging Integration
 
@@ -474,15 +476,11 @@ Assess context usage. Ask yourself: "Am I carrying detailed history from tasks 1
 
 ### If Context is Above 80%
 
-- Save detailed state to `.sutando/STATE.md`:
-  ```markdown
-  ## Context Checkpoint
-  - Tasks 1-8 complete, all tests passing
-  - Current test count: 24 tests
-  - Key decisions: [list any decisions made during execution]
-  - Known issues: [any logged issues]
-  - Next: Task 9 (Payment webhook handler)
+- Save detailed state using the CLI and STATE.md:
+  ```bash
+  node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --summary
   ```
+  Also add a context checkpoint section to STATE.md with key decisions, known issues, and next task.
 - Consider dispatching remaining tasks as subagents even in sequential mode — each subagent gets a fresh context
 - If you cannot dispatch subagents: continue but be extra disciplined about keeping only current-task context
 
@@ -841,36 +839,22 @@ Next: Task 4 (Registration endpoint)
 ────────────────────────────────────────────
 ```
 
-9. **UPDATE STATE.MD** — Mark Task 3 as done.
+9. **UPDATE STATE** — `node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --task 3 --status done`
 
 ## After All Tasks Complete
 
-Update `.sutando/STATE.md`:
+Use sutando-tools.cjs for state operations — provides lockfile safety and atomic writes:
 
-```markdown
----
-phase: execute
-updated: [timestamp]
----
-
-# Sutando State
-
-## Progress
-- [x] Task 1: [name] (DONE)
-- [x] Task 2: [name] (DONE)
-...
-- [x] Task N: [name] (DONE)
-
-## Decisions
-[Any decisions made during execution, especially from decision checkpoints]
-
-## Issues
-[Any issues logged during execution — bugs noticed, improvements deferred, questions for the human]
-
-## Execution Complete
-All [N] tasks finished. [total] tests passing, 0 failing.
-Transitioning to delivery.
+```bash
+SUTANDO_ROOT="$HOME/.claude/skills/sutando"
+node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase execute
+node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --summary
+node "$SUTANDO_ROOT/bin/sutando-tools.cjs" status
 ```
+
+The `state progress --summary` command outputs the full progress overview. The `status` command provides a quick confirmation of overall state.
+
+Also update `.sutando/STATE.md` with any decisions made and issues logged during execution (the CLI handles phase and task progress, but decisions and issues are recorded manually in STATE.md).
 
 Then transition to delivery (the orchestrator handles routing).
 
