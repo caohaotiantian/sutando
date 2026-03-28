@@ -1,0 +1,9 @@
+{
+  "name": "sutando",
+  "version": "1.0.0",
+  "description": "Autonomous agent skill: collaborative clarification, autonomous TDD execution, interactive delivery",
+  "author": {
+    "name": "deepsky"
+  },
+  "keywords": ["skills", "tdd", "autonomous", "agent", "stand"]
+}
