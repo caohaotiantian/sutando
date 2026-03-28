@@ -77,6 +77,13 @@ For each goal in SPEC.md:
 
 ## Process
 
+At the start of delivery, set the phase:
+
+```bash
+SUTANDO_ROOT="$HOME/.claude/skills/sutando"
+node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase deliver
+```
+
 ### Step 1: Generate SUMMARY.md
 
 Read `.sutando/STATE.md` and the git log to produce `.sutando/SUMMARY.md`:
@@ -262,7 +269,7 @@ After the walkthrough:
 
 **If Major issues:**
 - Discuss with the user which phase to return to
-- Update STATE.md to reflect the rollback
+- Update state via `node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase <target-phase>` to reflect the rollback
 - Transition to the appropriate phase
 
 ### Step 6: Finalize
@@ -274,17 +281,17 @@ After the walkthrough:
    git commit -m "docs: add Sutando delivery summary"
    ```
 
-3. Update STATE.md:
-   ```markdown
-   ---
-   phase: complete
-   updated: [timestamp]
-   ---
+3. Use sutando-tools.cjs for state operations — provides lockfile safety and atomic writes:
 
-   # Sutando State
-   ...
-   ## Status: COMPLETE
-   All tasks delivered and accepted.
+   At delivery start:
+   ```bash
+   SUTANDO_ROOT="$HOME/.claude/skills/sutando"
+   node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase deliver
+   ```
+
+   After user accepts:
+   ```bash
+   node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase complete
    ```
 
 4. Present final status:
