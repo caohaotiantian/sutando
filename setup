@@ -1,0 +1,62 @@
+#!/bin/bash
+# Sutando Setup Script
+# Installs Sutando as a Claude Code skill by creating symlinks.
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SKILL_NAME="sutando"
+
+echo "Installing Sutando..."
+echo ""
+
+# Detect target directory
+if [ -d "$HOME/.claude/skills" ]; then
+    TARGET_DIR="$HOME/.claude/skills"
+    PLATFORM="Claude Code"
+elif [ -d "$HOME/.codex/skills" ]; then
+    TARGET_DIR="$HOME/.codex/skills"
+    PLATFORM="Codex"
+else
+    # Default to Claude Code
+    TARGET_DIR="$HOME/.claude/skills"
+    PLATFORM="Claude Code"
+    mkdir -p "$TARGET_DIR"
+fi
+
+echo "Platform: $PLATFORM"
+echo "Target:   $TARGET_DIR/$SKILL_NAME"
+echo ""
+
+# Check for existing installation
+if [ -L "$TARGET_DIR/$SKILL_NAME" ]; then
+    EXISTING_TARGET="$(readlink "$TARGET_DIR/$SKILL_NAME")"
+    if [ "$EXISTING_TARGET" = "$SCRIPT_DIR" ]; then
+        echo "Already installed and up to date."
+        exit 0
+    else
+        echo "Existing symlink points to: $EXISTING_TARGET"
+        echo "Updating to: $SCRIPT_DIR"
+        rm "$TARGET_DIR/$SKILL_NAME"
+    fi
+elif [ -d "$TARGET_DIR/$SKILL_NAME" ]; then
+    echo "ERROR: $TARGET_DIR/$SKILL_NAME exists and is not a symlink."
+    echo "Remove it manually if you want to install Sutando there."
+    exit 1
+fi
+
+# Create symlink
+ln -s "$SCRIPT_DIR" "$TARGET_DIR/$SKILL_NAME"
+
+# Verify
+if [ -L "$TARGET_DIR/$SKILL_NAME" ] && [ -f "$TARGET_DIR/$SKILL_NAME/SKILL.md" ]; then
+    echo "Sutando installed successfully!"
+    echo ""
+    echo "Symlink: $TARGET_DIR/$SKILL_NAME -> $SCRIPT_DIR"
+    echo ""
+    echo "Sutando will be available in your next Claude Code session."
+    echo "It activates automatically when you ask to build, implement, or fix something."
+else
+    echo "ERROR: Installation verification failed."
+    exit 1
+fi
