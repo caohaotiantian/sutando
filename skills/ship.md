@@ -169,7 +169,7 @@ Do not force push. Do not retry with different flags.
 
 ### Step 1b: Generate PR Description from SUMMARY.md
 
-Read `.sutando/SUMMARY.md` and construct the PR description using this template:
+Read `docs/sutando/SUMMARY.md` and construct the PR description using this template:
 
 ```markdown
 ## Summary
@@ -430,7 +430,7 @@ are unresolved items or items marked as deferred:
 
 ### Check SPEC.md for Out-of-Scope Items
 
-Read `.sutando/SPEC.md` and look for the "Out of Scope" section. If there are
+Read `docs/sutando/SPEC.md` and look for the "Out of Scope" section. If there are
 deferred features:
 
 > "Features deferred to future work:
@@ -488,7 +488,7 @@ accepts delivery. The handoff looks like:
 
 ### SUMMARY.md Dependency
 
-This skill reads `.sutando/SUMMARY.md` for PR description generation. The SUMMARY.md
+This skill reads `docs/sutando/SUMMARY.md` for PR description generation. The SUMMARY.md
 must exist and contain at minimum:
 
 - **What Was Built** — for the PR summary section

@@ -11,7 +11,7 @@ updated: {{TIMESTAMP}}
 - Parallelism: {{PARALLELISM}}
 
 ## Progress
-{{TASK_LIST}}
+(populated after planning)
 
 ## Decisions Made During Execution
 | Task | Decision | Reasoning |
