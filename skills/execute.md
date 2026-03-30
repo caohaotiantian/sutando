@@ -12,9 +12,27 @@ description: >
 
 ## Overview
 
-Execute all tasks from `.sutando/PLAN.md` using strict TDD. This phase runs autonomously — the agent works through tasks without human intervention (subject to interruption tolerance setting and checkpoint types).
+Execute all tasks from `docs/sutando/PLAN.md` using strict TDD. This phase runs autonomously — the agent works through tasks without human intervention (subject to interruption tolerance setting and checkpoint types).
 
-Read `.sutando/PLAN.md` and `.sutando/config.json` before starting.
+Read `docs/sutando/PLAN.md` and `.sutando/config.json` before starting.
+
+## Mode Scaling
+
+Read mode from `.sutando/config.json` and follow the matching path.
+
+### Mode A: Lean Execution
+- **DO:** Sequential TDD loop only. One-line progress reporting per task.
+- **SKIP:** Subagent dispatch, wave analysis, checkpoint protocol, context budget tracking, model profiling
+- **Stuck handling:** 2 attempts then escalate (not 3)
+- **Progress update:** `node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --task N --status done --plan-file docs/sutando/PLAN.md`
+
+### Mode B: Standard Execution
+- **DO:** Sequential or wave-based per plan. Subagent dispatch if wave-based. Full progress reporting. 3 attempts then escalate.
+- **SKIP:** Model profiling per task (use balanced default)
+
+### Mode C: Full Execution
+- **DO:** Wave-based with subagents. Model profiling per task. Checkpoint types (auto/human-verify/decision/human-action). Context pressure management. Full progress reporting.
+- **SKIP:** Nothing
 
 ## Iron Laws
 
