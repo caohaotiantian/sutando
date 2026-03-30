@@ -298,7 +298,7 @@ SUTANDO_ROOT="$HOME/.claude/skills/sutando"
 node "$SUTANDO_ROOT/bin/sutando-tools.cjs" init --mode "$MODE" --interruption "$INTERRUPTION"
 ```
 
-This creates the full `.sutando/` directory structure, writes `config.json`, and writes the initial `STATE.md` in a single atomic operation.
+This creates both the `.sutando/` directory (ephemeral state) and the `docs/sutando/` directory (committed deliverables), writes `config.json`, and writes the initial `STATE.md` in a single atomic operation.
 
 Add `.sutando/` to `.gitignore` if not already present (the user's project shouldn't track Sutando's internal state by default).
 
@@ -307,18 +307,16 @@ Add `.sutando/` to `.gitignore` if not already present (the user's project shoul
 After initialization, the `.sutando/` directory serves as the project's internal state:
 
 ```
-.sutando/
-  config.json          # Session configuration
-  STATE.md             # Current progress (always up to date)
-  SPEC.md              # Produced by clarify phase
-  PLAN.md              # Produced by plan phase
-  phases/
-    research/
-      RESEARCH.md      # Mode C research findings
-    execution/
-      task-log.md      # Task completion log during execution
-    delivery/
-      verification.md  # Delivery verification results
+.sutando/                    (gitignored — ephemeral state)
+├── config.json
+├── STATE.md
+└── phases/
+    └── research/
+
+docs/sutando/                (committed — project deliverables)
+├── SPEC.md
+├── PLAN.md
+└── SUMMARY.md
 ```
 
 ## Context Awareness
@@ -413,8 +411,8 @@ Using the wrong domain language creates confusion and suggests you don't underst
 
 Read and follow the corresponding skill file for each phase:
 
-- **Step 5:** Read `skills/clarify.md` — produces `.sutando/SPEC.md`
-- **Step 6:** Read `skills/plan.md` — produces `.sutando/PLAN.md`
+- **Step 5:** Read `skills/clarify.md` — produces `docs/sutando/SPEC.md`
+- **Step 6:** Read `skills/plan.md` — produces `docs/sutando/PLAN.md`
 - **Step 7:** Hard gate — user approves plan
 - **Step 8:** Read `skills/execute.md` — autonomous TDD loop
 - **Step 9:** Read `skills/deliver.md` — summary + walkthrough + verification
@@ -427,8 +425,8 @@ Phases are sequential and each has a clear input and output:
 
 | Phase | Input | Output | Gate |
 |-------|-------|--------|------|
-| Clarify | User's request + codebase context | `.sutando/SPEC.md` | User reviews spec (Mode B/C) |
-| Plan | SPEC.md | `.sutando/PLAN.md` | User approves plan |
+| Clarify | User's request + codebase context | `docs/sutando/SPEC.md` | User reviews spec (Mode B/C) |
+| Plan | SPEC.md | `docs/sutando/PLAN.md` | User approves plan |
 | Execute | PLAN.md | Working code + passing tests | All tasks complete |
 | Deliver | Completed code | Verified, summarized, handed off | User accepts delivery |
 
