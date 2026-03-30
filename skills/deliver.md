@@ -13,6 +13,25 @@ description: >
 
 Generate a summary of what was built, run fresh verification, walk the user through key behaviors one-by-one, and gate on their acceptance before declaring done.
 
+## Mode Scaling
+
+Read mode from `.sutando/config.json` and follow the matching path.
+
+### Mode A: Quick Delivery
+- **DO:** Run test suite. Write brief summary (1 paragraph). Single accept/reject gate.
+- **SKIP:** Interactive walkthrough, goal-backward verification (TRUE/EXIST/WIRED), architecture decisions documentation, post-delivery recommendations
+- **Verification:** Test suite only (skip lint/types unless they exist and run fast)
+- **SUMMARY.md:** Brief — What Was Built (1 paragraph), Files Changed, Test Coverage, How to Run
+
+### Mode B: Standard Delivery
+- **DO:** Run tests + lint/types if available. Full SUMMARY.md. Abbreviated walkthrough (2-3 grouped items). Verification gate with accept/revisions/major options.
+- **SKIP:** Goal-backward TRUE/EXIST/WIRED analysis, architecture decisions section
+- **SUMMARY.md:** Full — all sections except Architecture Decisions
+
+### Mode C: Full Delivery
+- **DO:** All verification (tests + lint + types + e2e). Full SUMMARY.md with architecture decisions. Goal-backward verification. Full interactive walkthrough (1 item per goal). Post-delivery recommendations.
+- **SKIP:** Nothing
+
 ## Iron Law
 
 **No delivery claims without passing verification evidence.**
@@ -86,7 +105,7 @@ node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase deliver
 
 ### Step 1: Generate SUMMARY.md
 
-Read `.sutando/STATE.md` and the git log to produce `.sutando/SUMMARY.md`:
+Read `.sutando/STATE.md` and the git log to produce `docs/sutando/SUMMARY.md`:
 
 1. **What Was Built** — Summarize the feature in 2-3 paragraphs. What does it do? How does it work? What's the user-facing impact?
 
@@ -277,8 +296,7 @@ After the walkthrough:
 1. Ensure all changes are committed with clean, atomic history
 2. Commit SUMMARY.md to `.sutando/`:
    ```bash
-   git add .sutando/SUMMARY.md
-   git commit -m "docs: add Sutando delivery summary"
+   git add docs/sutando/SUMMARY.md && git commit -m "docs: add Sutando delivery summary"
    ```
 
 3. Use sutando-tools.cjs for state operations — provides lockfile safety and atomic writes:
@@ -297,7 +315,7 @@ After the walkthrough:
 4. Present final status:
    > "**Done.** All work committed on branch `[current branch]`.
    > - [N] tasks, [M] tests passing
-   > - Summary: `.sutando/SUMMARY.md`
+   > - Summary: `docs/sutando/SUMMARY.md`
    > - State: `.sutando/STATE.md`
    >
    > Need anything else? (push, create PR, etc.)"
