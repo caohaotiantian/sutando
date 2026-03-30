@@ -2,7 +2,7 @@
 name: sutando-clarify
 description: >
   Phase 1 of Sutando workflow. Adaptive requirement clarification
-  with three modes (Quick/Structured/Deep). Produces .sutando/SPEC.md.
+  with three modes (Quick/Structured/Deep). Produces docs/sutando/SPEC.md.
 ---
 
 # Sutando Phase 1: Clarification
@@ -14,6 +14,26 @@ description: >
 This phase adapts its depth to the project's complexity. The mode was already selected by the orchestrator (SKILL.md) and is available in `.sutando/config.json`.
 
 Read `.sutando/config.json` to determine the mode, then follow the corresponding section below.
+
+## Mode Scaling
+
+Read mode from `.sutando/config.json` and follow the matching path below. This determines which parts of this skill to execute.
+
+### Mode A: Quick (3-5 questions)
+- **DO:** Read context silently, batch 3-5 questions in one message, write brief SPEC
+- **SKIP:** One-question-at-a-time rule (batching is OK for Mode A), approach proposals, spec review gate
+- **SPEC size:** 10-30 lines
+- **After SPEC:** Transition directly to planning (no user review gate)
+
+### Mode B: Structured
+- **DO:** All steps. One question at a time. Propose 2-3 approaches. User reviews SPEC.
+- **SKIP:** Parallel research subagents
+- **SPEC size:** 50-150 lines
+
+### Mode C: Deep
+- **DO:** All steps including parallel research subagents. Thorough dialogue. Full SPEC with requirements and risks.
+- **SKIP:** Nothing
+- **SPEC size:** 150-400 lines
 
 **The goal of clarification is not to ask questions — it is to build a shared understanding.** Questions are just the tool. The real output is a SPEC.md that the planning phase can act on without ambiguity. Every question should bring you closer to that SPEC. If it doesn't, don't ask it.
 
@@ -189,7 +209,7 @@ For moderate features with design decisions to make.
 5. **Write SPEC.md** — 50-150 lines. Include architecture section based on selected approach.
 
 6. **User reviews SPEC.md:**
-   > "Spec written to `.sutando/SPEC.md`. Please review — any changes before we move to planning?"
+   > "Spec written to `docs/sutando/SPEC.md`. Please review — any changes before we move to planning?"
 
    Wait for approval or revision requests. If revisions: update SPEC.md, re-present for review.
 
@@ -315,7 +335,7 @@ For ambitious, multi-phase projects with many unknowns.
    - Risk assessment
 
 7. **User reviews SPEC.md:**
-   > "Full spec written to `.sutando/SPEC.md`. This is a substantial document — please review carefully. Any changes before we move to planning?"
+   > "Full spec written to `docs/sutando/SPEC.md`. This is a substantial document — please review carefully. Any changes before we move to planning?"
 
    Wait for approval or revision requests.
 
@@ -515,6 +535,12 @@ After SPEC.md is approved (or auto-approved in Mode A), present a brief transiti
 The transition message serves two purposes: (1) it confirms the agent understood the spec correctly (a last chance for the user to catch misunderstandings), and (2) it resets context for the planning phase.
 
 ## After Writing SPEC.md
+
+Commit the SPEC immediately after writing it:
+
+```bash
+git add docs/sutando/SPEC.md && git commit -m "docs: add Sutando spec"
+```
 
 Use sutando-tools.cjs for state operations — provides lockfile safety and atomic writes:
 
