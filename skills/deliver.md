@@ -293,7 +293,7 @@ After the walkthrough:
 ### Step 6: Finalize
 
 1. Ensure all changes are committed with clean, atomic history
-2. Commit SUMMARY.md to `.sutando/`:
+2. Commit SUMMARY.md to `docs/sutando/`:
    ```bash
    git add docs/sutando/SUMMARY.md && git commit -m "docs: add Sutando delivery summary"
    ```

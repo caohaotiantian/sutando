@@ -84,7 +84,7 @@ Every task in the plan declares a checkpoint type. Follow the protocol for each 
 
 ### `auto` Tasks — Silent Execution
 
-Execute the full TDD cycle. Verify. Commit. Update progress via `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task N --status done`. Move to the next task. No human interaction.
+Execute the full TDD cycle. Verify. Commit. Update progress via `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task N --status done --plan-file docs/sutando/PLAN.md`. Move to the next task. No human interaction.
 
 This is the default and covers ~85% of tasks.
 
@@ -190,7 +190,7 @@ For each task in order:
     4. Follow checkpoint protocol
     5. Self-review against SPEC.md
     6. Commit
-    7. Update progress: `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task N --status done`
+    7. Update progress: `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task N --status done --plan-file docs/sutando/PLAN.md`
     8. Emit progress report
     9. Next task
 ```
@@ -214,7 +214,7 @@ For each wave:
        f. If verifier says FAIL: fix integration issues inline
     4. Run FULL test suite after the wave completes (not just new tests)
     5. Handle any human-verify or decision checkpoints in the wave
-    6. Update progress for each task: `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task N --status done`
+    6. Update progress for each task: `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task N --status done --plan-file docs/sutando/PLAN.md`
     7. Emit wave progress report
     8. Next wave
 ```
@@ -329,6 +329,8 @@ test('it works', async () => {
    - Module not found → check the path matches the plan's file path exactly
 6. Keep fixing errors and re-running until you get a proper FAIL (not ERROR). Only then proceed to GREEN.
 
+**Exception for new modules:** If the test fails with "Cannot find module" for a file you're about to create in this task, this counts as a valid RED. The module not existing IS the evidence the feature is missing. Proceed to GREEN.
+
 ### GREEN: Minimal Implementation
 
 1. Write the MINIMUM code needed to make the test pass
@@ -400,7 +402,7 @@ Use sutando-tools.cjs for state operations — provides lockfile safety and atom
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state set phase execute
-node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task N --status done
+node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task N --status done --plan-file docs/sutando/PLAN.md
 ```
 
 Add any decisions or issues encountered to STATE.md manually (the CLI handles phase and task progress atomically).
@@ -856,7 +858,7 @@ Next: Task 4 (Registration endpoint)
 ────────────────────────────────────────────
 ```
 
-9. **UPDATE STATE** — `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task 3 --status done`
+9. **UPDATE STATE** — `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task 3 --status done --plan-file docs/sutando/PLAN.md`
 
 ## After All Tasks Complete
 
