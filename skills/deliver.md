@@ -99,8 +99,7 @@ For each goal in SPEC.md:
 At the start of delivery, set the phase:
 
 ```bash
-SUTANDO_ROOT="$HOME/.claude/skills/sutando"
-node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase deliver
+node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state set phase deliver
 ```
 
 ### Step 1: Generate SUMMARY.md
@@ -288,7 +287,7 @@ After the walkthrough:
 
 **If Major issues:**
 - Discuss with the user which phase to return to
-- Update state via `node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase <target-phase>` to reflect the rollback
+- Update state via `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state set phase <target-phase>` to reflect the rollback
 - Transition to the appropriate phase
 
 ### Step 6: Finalize
@@ -303,13 +302,12 @@ After the walkthrough:
 
    At delivery start:
    ```bash
-   SUTANDO_ROOT="$HOME/.claude/skills/sutando"
-   node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase deliver
+   node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state set phase deliver
    ```
 
    After user accepts:
    ```bash
-   node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase complete
+   node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state set phase complete
    ```
 
 4. Present final status:

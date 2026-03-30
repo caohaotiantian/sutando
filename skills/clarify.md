@@ -545,8 +545,7 @@ git add docs/sutando/SPEC.md && git commit -m "docs: add Sutando spec"
 Use sutando-tools.cjs for state operations — provides lockfile safety and atomic writes:
 
 ```bash
-SUTANDO_ROOT="$HOME/.claude/skills/sutando"
-node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase clarify
+node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state set phase clarify
 ```
 
 Then transition to the planning phase (the orchestrator handles routing).

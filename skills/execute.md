@@ -24,7 +24,7 @@ Read mode from `.sutando/config.json` and follow the matching path.
 - **DO:** Sequential TDD loop only. One-line progress reporting per task.
 - **SKIP:** Subagent dispatch, wave analysis, checkpoint protocol, context budget tracking, model profiling
 - **Stuck handling:** 2 attempts then escalate (not 3)
-- **Progress update:** `node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --task N --status done --plan-file docs/sutando/PLAN.md`
+- **Progress update:** `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task N --status done --plan-file docs/sutando/PLAN.md`
 
 ### Mode B: Standard Execution
 - **DO:** Sequential or wave-based per plan. Subagent dispatch if wave-based. Full progress reporting. 3 attempts then escalate.
@@ -84,7 +84,7 @@ Every task in the plan declares a checkpoint type. Follow the protocol for each 
 
 ### `auto` Tasks — Silent Execution
 
-Execute the full TDD cycle. Verify. Commit. Update progress via `node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --task N --status done`. Move to the next task. No human interaction.
+Execute the full TDD cycle. Verify. Commit. Update progress via `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task N --status done`. Move to the next task. No human interaction.
 
 This is the default and covers ~85% of tasks.
 
@@ -190,7 +190,7 @@ For each task in order:
     4. Follow checkpoint protocol
     5. Self-review against SPEC.md
     6. Commit
-    7. Update progress: `node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --task N --status done`
+    7. Update progress: `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task N --status done`
     8. Emit progress report
     9. Next task
 ```
@@ -214,7 +214,7 @@ For each wave:
        f. If verifier says FAIL: fix integration issues inline
     4. Run FULL test suite after the wave completes (not just new tests)
     5. Handle any human-verify or decision checkpoints in the wave
-    6. Update progress for each task: `node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --task N --status done`
+    6. Update progress for each task: `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task N --status done`
     7. Emit wave progress report
     8. Next wave
 ```
@@ -399,9 +399,8 @@ Ask yourself: "If I remove any line of this code, does the test fail?" If the an
 Use sutando-tools.cjs for state operations — provides lockfile safety and atomic writes:
 
 ```bash
-SUTANDO_ROOT="$HOME/.claude/skills/sutando"
-node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase execute
-node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --task N --status done
+node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state set phase execute
+node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task N --status done
 ```
 
 Add any decisions or issues encountered to STATE.md manually (the CLI handles phase and task progress atomically).
@@ -496,7 +495,7 @@ Assess context usage. Ask yourself: "Am I carrying detailed history from tasks 1
 
 - Save detailed state using the CLI and STATE.md:
   ```bash
-  node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --summary
+  node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --summary
   ```
   Also add a context checkpoint section to STATE.md with key decisions, known issues, and next task.
 - Consider dispatching remaining tasks as subagents even in sequential mode — each subagent gets a fresh context
@@ -857,17 +856,16 @@ Next: Task 4 (Registration endpoint)
 ────────────────────────────────────────────
 ```
 
-9. **UPDATE STATE** — `node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --task 3 --status done`
+9. **UPDATE STATE** — `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --task 3 --status done`
 
 ## After All Tasks Complete
 
 Use sutando-tools.cjs for state operations — provides lockfile safety and atomic writes:
 
 ```bash
-SUTANDO_ROOT="$HOME/.claude/skills/sutando"
-node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase execute
-node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state progress --summary
-node "$SUTANDO_ROOT/bin/sutando-tools.cjs" status
+node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state set phase execute
+node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state progress --summary
+node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" status
 ```
 
 The `state progress --summary` command outputs the full progress overview. The `status` command provides a quick confirmation of overall state.

@@ -17,11 +17,10 @@ description: >
 Sutando includes a CLI tool for reliable state management. Use it instead of manual file operations:
 
 ```bash
-SUTANDO_ROOT="$HOME/.claude/skills/sutando"
-node "$SUTANDO_ROOT/bin/sutando-tools.cjs" <command>
+node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" <command>
 ```
 
-This provides lockfile safety, atomic writes, and structured JSON output. Key commands:
+`${CLAUDE_PLUGIN_ROOT}` is set automatically by Claude Code to the plugin's installation directory. This provides lockfile safety, atomic writes, and structured JSON output. Key commands:
 
 - `init --mode B --interruption normal` — Initialize `.sutando/` directory
 - `state get` / `state get phase` — Read state
@@ -197,8 +196,7 @@ The mode affects how deep each phase goes, but every phase still happens:
 Check if `.sutando/STATE.md` exists in the project root. Use the CLI to read the current phase:
 
 ```bash
-SUTANDO_ROOT="$HOME/.claude/skills/sutando"
-node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state get phase
+node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state get phase
 ```
 
 **If it exists:**
@@ -206,7 +204,7 @@ node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state get phase
 > - **Resume** from where we left off?
 > - **Start fresh** (archives current `.sutando/` to `.sutando.bak/`)?"
 
-If resume: read the state via `node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state get` to determine current phase and progress, then jump to the appropriate phase skill. Before continuing work, verify the codebase state:
+If resume: read the state via `node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state get` to determine current phase and progress, then jump to the appropriate phase skill. Before continuing work, verify the codebase state:
 - Run the test suite to confirm previously completed work still passes.
 - Check `git status` and `git log --oneline -5` for any changes made between sessions.
 - If the codebase has changed significantly (files modified, new commits by the user), flag it: "I notice some changes since our last session — [summary]. These might affect the plan. Want me to review and adjust, or proceed as-is?"
@@ -294,8 +292,7 @@ Wait for user response. Accept their choice.
 Use sutando-tools.cjs to initialize the project state directory, config, and STATE.md atomically — provides lockfile safety and atomic writes:
 
 ```bash
-SUTANDO_ROOT="$HOME/.claude/skills/sutando"
-node "$SUTANDO_ROOT/bin/sutando-tools.cjs" init --mode "$MODE" --interruption "$INTERRUPTION"
+node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" init --mode "$MODE" --interruption "$INTERRUPTION"
 ```
 
 This creates both the `.sutando/` directory (ephemeral state) and the `docs/sutando/` directory (committed deliverables), writes `config.json`, and writes the initial `STATE.md` in a single atomic operation.
@@ -439,7 +436,7 @@ Phases are sequential and each has a clear input and output:
 After each phase completes, use sutando-tools.cjs to update state atomically — provides lockfile safety and atomic writes:
 
 ```bash
-node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase <phase-name>
+node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state set phase <phase-name>
 ```
 
 This enables session resumption if the conversation is interrupted.

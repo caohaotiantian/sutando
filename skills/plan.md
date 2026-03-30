@@ -652,9 +652,8 @@ git add docs/sutando/PLAN.md && git commit -m "docs: add Sutando implementation 
 Use sutando-tools.cjs for state operations — provides lockfile safety and atomic writes:
 
 ```bash
-SUTANDO_ROOT="$HOME/.claude/skills/sutando"
-node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase plan
-node "$SUTANDO_ROOT/bin/sutando-tools.cjs" state set phase approved
+node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state set phase plan
+node "${CLAUDE_PLUGIN_ROOT}/bin/sutando-tools.cjs" state set phase approved
 ```
 
 The first command records that planning is complete. The second records that the user approved the plan, enabling the transition to execution.
