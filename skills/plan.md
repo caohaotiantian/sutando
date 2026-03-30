@@ -2,7 +2,7 @@
 name: sutando-plan
 description: >
   Phase 2 of Sutando workflow. Reads SPEC.md, decomposes into atomic TDD tasks,
-  analyzes dependencies, decides parallelism strategy, produces .sutando/PLAN.md.
+  analyzes dependencies, decides parallelism strategy, produces docs/sutando/PLAN.md.
   Ends with hard approval gate before autonomous execution.
 ---
 
@@ -12,7 +12,26 @@ description: >
 
 ## Overview
 
-Read `.sutando/SPEC.md`, decompose into atomic tasks (each one TDD cycle), analyze dependencies, decide sequential vs wave-based execution, and write `.sutando/PLAN.md`. The user MUST approve the plan before execution begins.
+Read `docs/sutando/SPEC.md`, decompose into atomic tasks (each one TDD cycle), analyze dependencies, decide sequential vs wave-based execution, and write `docs/sutando/PLAN.md`. The user MUST approve the plan before execution begins.
+
+## Mode Scaling
+
+Read mode from `.sutando/config.json` and follow the matching path.
+
+### Mode A: Minimal Planning
+- **DO:** File map, task decomposition, zero-placeholder check, approval gate
+- **SKIP:** Model profiling, scope estimation tables, dependency visualization, checkpoint type classification
+- **ASSUME:** Sequential execution, balanced model profile
+- **Max tasks:** 5 (if more needed, suggest escalating to Mode B)
+
+### Mode B: Standard Planning
+- **DO:** All steps. Parallelism decision. Scope estimation.
+- **SKIP:** Model profiling (use balanced default)
+- **Checkpoint types:** auto and human-verify only
+
+### Mode C: Full Planning
+- **DO:** All steps including model profiling, full dependency graphs, checkpoint type classification for every task
+- **SKIP:** Nothing
 
 ## Model Profiling
 
@@ -73,7 +92,7 @@ If the spec covers multiple independent subsystems (auth + payments + notificati
 
 ### Step 1: Read and Internalize SPEC.md
 
-Read `.sutando/SPEC.md` completely. Understand:
+Read `docs/sutando/SPEC.md` completely. Understand:
 - What we're building (Goal)
 - What constraints exist
 - What decisions were made
@@ -369,7 +388,7 @@ For each wave (or for the plan as a whole if sequential), estimate:
 
 ### Step 7: Write PLAN.md
 
-Write to `.sutando/PLAN.md`:
+Write to `docs/sutando/PLAN.md`:
 
 ```markdown
 ---
@@ -426,7 +445,7 @@ Before finalizing, check whether the plan should be split:
 
 **How to split:**
 1. Identify natural boundaries (subsystems, layers, features)
-2. Create `.sutando/PLAN-01-[name].md`, `.sutando/PLAN-02-[name].md`, etc.
+2. Create `docs/sutando/PLAN-01-[name].md`, `docs/sutando/PLAN-02-[name].md`, etc.
 3. Each sub-plan gets its own frontmatter, file map, and dependency graph
 4. Define explicit interfaces between sub-plans: "Sub-plan 2 expects these types/functions to exist from Sub-plan 1"
 5. Sub-plans execute in order — later plans can depend on earlier plans being complete
@@ -623,6 +642,12 @@ Present the plan inline, then:
 **If approved:** Update PLAN.md status to `approved`, then update state via the CLI, and transition to execution.
 
 ## After Approval
+
+Commit the PLAN immediately after writing it:
+
+```bash
+git add docs/sutando/PLAN.md && git commit -m "docs: add Sutando implementation plan"
+```
 
 Use sutando-tools.cjs for state operations — provides lockfile safety and atomic writes:
 
