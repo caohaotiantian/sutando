@@ -350,6 +350,17 @@ function handleInit(flags) {
     errorOut('init_failed', `Failed to create ${SUTANDO_DIR}/: ${err.message}`);
   }
 
+  // Create phases/research directory
+  try {
+    fs.mkdirSync(path.join(root, 'phases', 'research'), { recursive: true });
+  } catch { /* non-fatal */ }
+
+  // Create docs/sutando directory
+  try {
+    const docsDir = path.resolve('docs', 'sutando');
+    fs.mkdirSync(docsDir, { recursive: true });
+  } catch { /* non-fatal */ }
+
   // Create config.json
   const config = { mode, interruption, parallelism };
   try {
@@ -366,17 +377,17 @@ function handleInit(flags) {
   try {
     const template = fs.readFileSync(templatePath, 'utf-8');
     stateContent = template
-      .replace(/\{\{PHASE\}\}/g, 'plan')
+      .replace(/\{\{PHASE\}\}/g, 'init')
       .replace(/\{\{TIMESTAMP\}\}/g, now)
       .replace(/\{\{MODE\}\}/g, mode)
       .replace(/\{\{INTERRUPTION\}\}/g, interruption)
       .replace(/\{\{PARALLELISM\}\}/g, parallelism)
-      .replace(/\{\{TASK_LIST\}\}/g, '- [ ] Task 1: (pending)');
+      .replace(/\{\{TASK_LIST\}\}/g, '(populated after planning)');
   } catch {
     // Fallback if template is missing
     stateContent = renderFrontmatter(
-      { phase: 'plan', updated: now },
-      `\n# Sutando State\n\n## Configuration\n- Mode: ${mode}\n- Interruption: ${interruption}\n- Parallelism: ${parallelism}\n\n## Progress\n- [ ] Task 1: (pending)\n\n## Decisions Made During Execution\n| Task | Decision | Reasoning |\n|------|----------|-----------|\n\n## Issues Encountered\n\n## Test Status\n- Unit: 0 passing\n- Integration: 0 passing\n`
+      { phase: 'init', updated: now },
+      `\n# Sutando State\n\n## Configuration\n- Mode: ${mode}\n- Interruption: ${interruption}\n- Parallelism: ${parallelism}\n\n## Progress\n(populated after planning)\n\n## Decisions Made During Execution\n| Task | Decision | Reasoning |\n|------|----------|-----------|\n\n## Issues Encountered\n\n## Test Status\n- Unit: 0 passing\n- Integration: 0 passing\n`
     );
   }
 
@@ -402,7 +413,7 @@ function handleInit(flags) {
     // Non-fatal — user may not have a git repo
   }
 
-  output({ status: 'ok', path: '.sutando/' });
+  output({ status: 'ok', state_path: '.sutando/', docs_path: 'docs/sutando/' });
 }
 
 // ─── Command: state get ─────────────────────────────────────────────────────
@@ -513,14 +524,75 @@ function handleStateSet(field, value) {
 
 // ─── Command: state progress ────────────────────────────────────────────────
 
+/**
+ * Reads PLAN.md to discover tasks, syncs them into STATE.md progress section.
+ * Plan tasks are the source of truth; existing statuses in STATE.md are preserved.
+ */
+function discoverAndSyncTasks(sp, planFile) {
+  // Read plan tasks
+  const planTasks = [];
+  if (fs.existsSync(planFile)) {
+    const planContent = fs.readFileSync(planFile, 'utf-8');
+    const taskHeaderPattern = /^###\s+Task\s+(\d+):\s*(.*)$/gm;
+    let m;
+    while ((m = taskHeaderPattern.exec(planContent)) !== null) {
+      planTasks.push({ task: parseInt(m[1], 10), description: m[2].trim() });
+    }
+  }
+
+  if (planTasks.length === 0) return;
+
+  // Read current STATE.md
+  let content = fs.readFileSync(sp, 'utf-8');
+  const { frontmatter, body } = parseFrontmatter(content);
+
+  // Parse existing progress to preserve statuses
+  const existingTasks = parseProgressFromBody(body);
+  const statusMap = {};
+  for (const t of existingTasks) {
+    statusMap[t.task] = t.status;
+  }
+
+  // Build merged progress lines
+  const progressLines = planTasks.map(pt => {
+    const existing = statusMap[pt.task] || 'pending';
+    const marker = existing === 'done' ? 'x' : ' ';
+    return `- [${marker}] Task ${pt.task}: ${pt.description}`;
+  });
+  const newProgressBlock = progressLines.join('\n');
+
+  // Replace progress section in body
+  let updatedBody;
+  if (body.includes('(populated after planning)')) {
+    updatedBody = body.replace('(populated after planning)', newProgressBlock);
+  } else {
+    // Replace existing task lines in the Progress section
+    const progressSectionPattern = /(## Progress\s*\n)([\s\S]*?)(\n## |\n*$)/;
+    const sectionMatch = body.match(progressSectionPattern);
+    if (sectionMatch) {
+      updatedBody = body.replace(progressSectionPattern, `$1${newProgressBlock}\n$3`);
+    } else {
+      updatedBody = body;
+    }
+  }
+
+  frontmatter.updated = new Date().toISOString();
+  const updated = renderFrontmatter(frontmatter, updatedBody);
+  atomicWrite(sp, updated);
+}
+
 function handleStateProgress(flags) {
   const sp = statePath();
   if (!fs.existsSync(sp)) {
     errorOut('no_state', `${SUTANDO_DIR}/${STATE_FILE} not found`);
   }
 
+  const planFile = flags['plan-file'] || path.resolve('docs', 'sutando', 'PLAN.md');
+
   // Summary mode
   if (flags.summary) {
+    discoverAndSyncTasks(sp, planFile);
+
     const content = fs.readFileSync(sp, 'utf-8');
     const { body } = parseFrontmatter(content);
     const tasks = parseProgressFromBody(body);
@@ -532,15 +604,9 @@ function handleStateProgress(flags) {
 
     const done = tasks.filter(t => t.status === 'done').length;
     const total = tasks.length;
-    const lines = tasks.map(t => {
-      const marker = t.status === 'done' ? '[x]' : '[ ]';
-      return `  ${marker} Task ${t.task}: ${t.description}`;
-    });
-
-    const table = lines.join('\n');
     const summaryLine = `Progress: ${done}/${total} tasks done`;
 
-    output({ tasks, done, total, summary: summaryLine, table });
+    output({ tasks, done, total, summary: summaryLine });
     return;
   }
 
@@ -559,6 +625,9 @@ function handleStateProgress(flags) {
 
   acquireLock(sp);
   try {
+    // Sync tasks from plan first
+    discoverAndSyncTasks(sp, planFile);
+
     let content = fs.readFileSync(sp, 'utf-8');
     const { frontmatter, body } = parseFrontmatter(content);
 
